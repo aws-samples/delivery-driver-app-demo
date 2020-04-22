@@ -1,0 +1,92 @@
+service: ${self:custom.secrets.SERVICE}
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: ${self:custom.secrets.NODE_ENV}
+  region: us-east-1
+  environment: 
+    NODE_ENV: ${self:custom.secrets.NODE_ENV}
+    DYNAMODB_TABLE: ${self:service}-${self:custom.secrets.NODE_ENV}
+    JWT_SECRET: ${self:custom.secrets.JWT_SECRET}
+    VOICE_CONNECTOR_ID: ${self:custom.secrets.VOICE_CONNECTOR_ID}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - chime:*
+      Resource: "*"
+functions:
+  nuxt:
+    handler: index.nuxt
+    events:
+      - http: ANY /
+      - http: ANY /{proxy+}
+  api:
+    handler: index.api
+    events:
+      - http: ANY /api
+      - http: ANY /api/{proxy+}
+
+plugins:
+  - serverless-apigw-binary
+  - serverless-offline
+  - serverless-dynamodb-local
+
+resources:
+  Resources:
+    UserDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: email
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: email
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}-User
+    PhoneProxyDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: email
+            AttributeType: S
+          -
+            AttributeName: proxyId
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: email
+            KeyType: HASH
+          -
+            AttributeName: proxyId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}-ChimeProxy
+custom:
+  secrets: ${file(secrets.json)}
+  apigwBinary:
+    types:
+      - '*/*'
+  custom:
+  dynamodb:
+    stages:
+      - ${self:custom.secrets.NODE_ENV}
+    migration: true
+    
+  
