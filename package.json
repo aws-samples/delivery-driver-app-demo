@@ -35,7 +35,7 @@
     "helmet": "^3.23.3",
     "jsonwebtoken": "^8.5.1",
     "libphonenumber-js": "^1.7.57",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "nuxt": "^2.14.4",
     "nuxt-buefy": "^0.3.31",
     "nuxt-fontawesome": "^0.4.0",
