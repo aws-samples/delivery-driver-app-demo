@@ -57,6 +57,6 @@
     "sass-loader": "^10.1.1",
     "serverless-domain-manager": "^5.1.0",
     "serverless-dynamodb-local": "^0.2.39",
-    "serverless-offline": "^7.0.0"
+    "serverless-offline": "^12.0.4"
   }
 }
